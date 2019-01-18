@@ -12,3 +12,12 @@ wazo-microsoft:
   bind:
     etc/wazo-auth/conf.d/microsoft.yml: /etc/wazo-auth/conf.d/microsoft.yml 
 ```
+# Running integration tests
+You need Docker installed.
+
+```sh
+cd integration_tests
+pip install -U -r test-requirements.txt
+make test-setup
+make test
+```
