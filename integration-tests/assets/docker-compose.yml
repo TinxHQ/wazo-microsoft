@@ -7,6 +7,7 @@ services:
     ports:
       - "9497"
     environment:
+      OAUTHLIB_INSECURE_TRANSPORT: 1
       XIVO_UUID: the-predefined-xivo-uuid
     volumes:
       - "../..:/usr/src/wazo-microsoft"

@@ -1,7 +1,6 @@
 # Copyright 2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
-import os
 import json
 import logging
 from threading import Thread
@@ -12,9 +11,6 @@ import websocket
 from .helpers import get_timestamp_expiration
 
 logger = logging.getLogger(__name__)
-
-# In order to be able to fetch_token without SSL
-os.environ['OAUTHLIB_INSECURE_TRANSPORT'] = '1'
 
 
 class WebSocketOAuth2(Thread):
