@@ -4,7 +4,6 @@
 import json
 import logging
 from threading import Thread
-import traceback
 
 import websocket
 
@@ -16,7 +15,7 @@ logger = logging.getLogger(__name__)
 class WebSocketOAuth2(Thread):
 
     def __init__(self, host, auth, external_auth, client_secret, token_url, auth_type):
-        Thread.__init__(self)
+        super().__init__()
 
         self.host = host
         self.oauth2 = auth
@@ -45,7 +44,6 @@ class WebSocketOAuth2(Thread):
 
     def _on_error(self, ws, error):
         logger.error(error)
-        traceback.print_exc()
 
     def _on_close(self, ws):
         logger.debug("WebsocketOAuth closed.")
