@@ -1,8 +1,9 @@
-name: wazo-microsoft
-namespace: official
-version: 1.0.0-1
-description: Add microsoft as an external authentication resource
-plugin_format_version: 1
 debian_depends:
   - python3-requests-oauthlib
-homepage: http://wazo.io
+description: Add microsoft as an external authentication resource
+display_name: Microsoft authentication
+homepage: https://github.com/tinxhq/wazo-microsoft
+name: wazo-microsoft
+namespace: official
+plugin_format_version: 1
+version: 1.0.0-1
