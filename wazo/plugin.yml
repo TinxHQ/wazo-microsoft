@@ -1,6 +1,6 @@
 name: wazo-microsoft
 namespace: official
-version: 0.0.1
+version: 1.0.0-1
 description: Add microsoft as an external authentication resource
 plugin_format_version: 1
 debian_depends:
