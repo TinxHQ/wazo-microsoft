@@ -4,21 +4,21 @@
 
 case "$1" in
     build)
-	python3 setup.py bdist -d dist/python3
+        python3 setup.py bdist -d dist/python3
     ;;
 
     package)
-	tar xvf dist/python3/wazo_microsoft-*.tar.gz -C ${pkgdir}
+        tar xvf dist/python3/wazo_microsoft-*.tar.gz -C ${pkgdir}
         cp -R etc ${pkgdir}/
     ;;
 
     install)
-	systemctl restart wazo-auth
+        systemctl restart wazo-auth
     ;;
 
     uninstall)
-    rm -r /etc/wazo-auth/conf.d/microsoft.yml
-	systemctl restart wazo-auth || true
+        rm -r /etc/wazo-auth/conf.d/microsoft.yml
+        systemctl restart wazo-auth || true
     ;;
 
     postrm)
