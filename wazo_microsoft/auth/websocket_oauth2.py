@@ -7,6 +7,7 @@ from threading import Thread
 
 import websocket
 
+from wazo_auth.exceptions import ExternalAuthAlreadyExists
 from .helpers import get_timestamp_expiration
 
 logger = logging.getLogger(__name__)
@@ -34,7 +35,10 @@ class WebSocketOAuth2(Thread):
             on_error=self._on_error,
             on_close=self._on_close)
         logger.debug('WebSocketOAuth2 opened.')
-        ws.run_forever()
+        try:
+            ws.run_forever()
+        finally:
+            ws.close()
 
     def _on_message(self, ws, message):
         logger.debug("Confirmation has been received on websocketOAuth, message : {}.".format(message))
@@ -57,4 +61,7 @@ class WebSocketOAuth2(Thread):
             'token_expiration': get_timestamp_expiration(token_data['expires_in'])
         }
         logger.debug('Microsoft token created.')
-        self.external_auth_service.update(user_uuid, self.auth_type, data)
+        try:
+            self.external_auth_service.create(user_uuid, self.auth_type, data)
+        except ExternalAuthAlreadyExists:
+            self.external_auth_service.update(user_uuid, self.auth_type, data)

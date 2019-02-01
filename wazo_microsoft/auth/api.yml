@@ -19,6 +19,14 @@ paths:
           description: Invalid body
           schema:
             $ref: '#/definitions/APIError'
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/APIError'
+        '404':
+          description: Not found
+          schema:
+            $ref: '#/definitions/APIError'
     post:
       consumes:
         - application/json

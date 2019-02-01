@@ -25,23 +25,42 @@ class TestAuthMicrosoft(BaseTestCase):
 
     asset = 'auth_microsoft'
 
+    def test_when_create_authorize_get_then_does_not_raise(self):
+        self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
+
+        self._simulate_user_authentication()
+
+        assert_that(
+            calling(self.client.external.get).with_args(MICROSOFT, self.admin_user_uuid),
+            not_(raises(requests.HTTPError))
+        )
+
     def test_when_create_then_url_returned(self):
         response = self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
 
         assert_that(response, has_key('authorization_url'))
 
-    def test_when_create_twice_then_conflict(self):
-        self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
-
-        _assert_that_raises_http_error(409, self.client.external.create, MICROSOFT, self.admin_user_uuid, {})
-
-    def test_when_delete_then_no_content(self):
+    def test_when_create_twice_without_authorize_then_not_created(self):
         self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
 
         assert_that(
-            calling(self.client.external.delete).with_args(MICROSOFT, self.admin_user_uuid),
+            calling(self.client.external.create).with_args(MICROSOFT, self.admin_user_uuid, {}),
             not_(raises(requests.HTTPError))
         )
+
+    def test_when_create_twice_with_authorize_then_does_not_raise(self):
+        self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
+        self._simulate_user_authentication()
+        self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
+        self._simulate_user_authentication()
+
+        assert_that(
+            calling(self.client.external.get).with_args(MICROSOFT, self.admin_user_uuid),
+            not_(raises(requests.HTTPError))
+        )
+
+    def test_when_delete_then_not_found(self):
+        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
 
     def test_when_delete_nothing_then_not_found(self):
         _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
@@ -62,10 +81,10 @@ class TestAuthMicrosoft(BaseTestCase):
     def test_given_no_external_auth_when_get_then_not_found(self):
         _assert_that_raises_http_error(404, self.client.external.get, MICROSOFT, self.admin_user_uuid)
 
-    def test_given_no_external_auth_confirmed_when_get_then_unauthorized(self):
+    def test_given_no_external_auth_confirmed_when_get_then_not_found(self):
         self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
 
-        _assert_that_raises_http_error(401, self.client.external.get, MICROSOFT, self.admin_user_uuid)
+        _assert_that_raises_http_error(404, self.client.external.get, MICROSOFT, self.admin_user_uuid)
         self._simulate_user_authentication()
         self.client.external.get(MICROSOFT, self.admin_user_uuid)
 

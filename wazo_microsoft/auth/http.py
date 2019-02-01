@@ -12,7 +12,6 @@ from requests_oauthlib import OAuth2Session
 from wazo_auth import http
 from wazo_auth.exceptions import UserParamException
 
-from .exceptions import ExternalAuthNotAuthorizedYetException
 from .helpers import MicrosoftPostSchema, get_timestamp_expiration
 from .websocket_oauth2 import WebSocketOAuth2
 
@@ -56,15 +55,12 @@ class MicrosoftAuth(http.AuthResource):
             self.oauth2.scope = args.get('scope')
 
         logger.debug('User(%s) is creating an authorize url for Microsoft', str(user_uuid))
-        data = {
-            'client_id': self.client_id,
-            'scope': args.get('scope', self.scope)
-        }
-        self.external_auth_service.create(user_uuid, self.auth_type, data)
+
         authorization_url, state = self.oauth2.authorization_url(self.authorization_base_url)
         logger.debug('Authorization url : {}'.format(authorization_url))
 
         websocket_thread = Thread(target=self.websocket.run, args=(state, user_uuid), name='websocket_thread')
+        websocket_thread.daemon = True
         websocket_thread.start()
 
         return {'authorization_url': authorization_url}, 201
@@ -73,11 +69,7 @@ class MicrosoftAuth(http.AuthResource):
     def get(self, user_uuid):
         data = self.external_auth_service.get(user_uuid, self.auth_type)
 
-        token = data.get('access_token')
         expiration = data.get('token_expiration')
-
-        if not token:
-            raise ExternalAuthNotAuthorizedYetException(self.auth_type)
 
         if self._is_token_expired(expiration):
             return self._refresh_token(user_uuid, data)
