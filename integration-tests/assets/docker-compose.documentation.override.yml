@@ -1,0 +1,9 @@
+version: '3.7'
+services:
+  sync:
+    depends_on:
+      - auth
+      - postgres
+      - swagger-validator
+    environment:
+      TARGETS: "auth:9497 postgres:5432 swagger-validator:8080"

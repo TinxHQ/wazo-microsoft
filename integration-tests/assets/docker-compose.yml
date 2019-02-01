@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+
+  auth:
+    image: wazopbx/wazo-auth-microsoft-tests
+    ports:
+      - "9497"
+    environment:
+      OAUTHLIB_INSECURE_TRANSPORT: 1
+      XIVO_UUID: the-predefined-xivo-uuid
+    volumes:
+      - "../..:/usr/src/wazo-microsoft"
+      - "./etc/wazo-auth/conf.d/default.yml:/etc/wazo-auth/conf.d/default.yml"
+      - "./etc/wazo-auth/conf.d/microsoft.yml:/etc/wazo-auth/conf.d/microsoft.yml"
+    command: "wazo-auth"
+
+  oauth2sync:
+    image: oauth2-synchronization-service
+    ports:
+      - "80"
+
+  postgres:
+    image: wazopbx/wazo-auth-db
+    ports:
+      - "5432"
+
+  rabbitmq:
+    image: rabbitmq
+    ports:
+      - "5672"
+    volumes:
+      - type: tmpfs
+        target: /var/lib/rabbitmq
+
+  swagger-validator:
+    image: swaggerapi/swagger-validator
+    ports:
+      - "8080"
+
+  sync:
+    image: wazopbx/wait
+    environment:
+      TIMEOUT: "${INTEGRATION_TEST_TIMEOUT}"
