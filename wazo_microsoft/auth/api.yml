@@ -1,10 +1,6 @@
 paths:
   /users/{user_uuid}/external/microsoft:
     get:
-      consumes:
-        - application/json
-      produces:
-        - application/json
       summary: Get a Microsoft token
       description: "**Required ACL**: `auth.users.{user_uuid}.external.microsoft.read`"
       tags:
@@ -17,10 +13,6 @@ paths:
           description: The auth data
           schema:
             $ref: '#/definitions/MicrosoftGetResult'
-        '400':
-          description: Invalid body
-          schema:
-            $ref: '#/definitions/APIError'
         '401':
           description: Unauthorized
           schema:
@@ -30,10 +22,6 @@ paths:
           schema:
             $ref: '#/definitions/APIError'
     post:
-      consumes:
-        - application/json
-      produces:
-        - application/json
       summary: Ask for a verification URL and store code to get token
       description: "**Required ACL**: `auth.users.{user_uuid}.external.microsoft.create`"
       tags:
@@ -56,10 +44,6 @@ paths:
           schema:
             $ref: '#/definitions/APIError'
     delete:
-      consumes:
-        - application/json
-      produces:
-        - application/json
       summary: Delete a Microsoft token
       description: "**Required ACL**: `auth.users.{user_uuid}.external.microsoft.delete`"
       tags:
