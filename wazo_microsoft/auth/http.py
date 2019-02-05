@@ -12,7 +12,8 @@ from requests_oauthlib import OAuth2Session
 from wazo_auth import http
 from wazo_auth.exceptions import UserParamException
 
-from .helpers import MicrosoftPostSchema, get_timestamp_expiration
+from .helpers import get_timestamp_expiration
+from .schemas import MicrosoftSchema
 from .websocket_oauth2 import WebSocketOAuth2
 
 logger = logging.getLogger(__name__)
@@ -46,7 +47,7 @@ class MicrosoftAuth(http.AuthResource):
 
     @http.required_acl('auth.users.{user_uuid}.external.microsoft.create')
     def post(self, user_uuid):
-        args, errors = MicrosoftPostSchema().load(request.get_json())
+        args, errors = MicrosoftSchema().load(request.get_json())
 
         if errors:
             raise UserParamException.from_errors(errors)
@@ -100,8 +101,4 @@ class MicrosoftAuth(http.AuthResource):
 
     @staticmethod
     def _create_get_response(data):
-        return {
-            'access_token': data['access_token'],
-            'expiration': data['token_expiration'],
-            'scope': data.get('scope'),
-        }, 200
+        return MicrosoftSchema().dump(data)
