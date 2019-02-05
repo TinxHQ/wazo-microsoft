@@ -15,6 +15,8 @@ paths:
       responses:
         '200':
           description: The auth data
+          schema:
+            $ref: '#/definitions/MicrosoftGetResult'
         '400':
           description: Invalid body
           schema:
@@ -74,6 +76,22 @@ paths:
           description: Not found
 
 definitions:
+  MicrosoftGetResult:
+    type: object
+    properties:
+      access_token:
+        type: string
+        description: Microsoft token
+      scope:
+        type: string
+        description: Scope permissions
+      token_expiration:
+        type: integer
+        description: Token expiration
+    required:
+      - access_token
+      - scope
+      - token_expiration
   MicrosoftPost:
     type: object
     properties:
