@@ -77,10 +77,13 @@ definitions:
   MicrosoftPost:
     type: object
     properties:
-      code:
-        type: string
-        description: The code you received from the redirect uri authentication
       scope:
+        description: Scope permissions
+        example:
+          [
+              "offline_access",
+              "Contacts.Read"
+          ]
         type: array
         items:
           type: string

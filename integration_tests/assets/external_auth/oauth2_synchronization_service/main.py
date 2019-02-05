@@ -38,7 +38,8 @@ def authorize(service, state):
 def get_microsoft_token(service):
     body = {
         'access_token': 'access_token',
+        'expires_in': 42,
         'refresh_token': 'refresh_token',
-        'expires_in': 42
+        'scope': 'scope'
     }
     return jsonify(body), 200
