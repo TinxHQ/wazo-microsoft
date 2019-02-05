@@ -72,8 +72,12 @@ paths:
           description: No content
         '401':
           description: Unauthorized
+          schema:
+            $ref: '#/definitions/APIError'
         '404':
           description: Not found
+          schema:
+            $ref: '#/definitions/APIError'
 
 definitions:
   MicrosoftGetResult:
