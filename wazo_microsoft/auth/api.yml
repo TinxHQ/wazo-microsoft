@@ -111,6 +111,8 @@ definitions:
           type: string
   MicrosoftPostResult:
     type: object
+    required:
+      - verification_url
     properties:
       verification_url:
         type: string
