@@ -94,6 +94,7 @@ class MicrosoftAuth(http.AuthResource):
         logger.debug('refresh token info: %s', token_data)
         data['access_token'] = token_data['access_token']
         data['token_expiration'] = get_timestamp_expiration(token_data['expires_in'])
+        data['scope'] = token_data['scope']
 
         self.external_auth_service.update(user_uuid, self.auth_type, data)
 
