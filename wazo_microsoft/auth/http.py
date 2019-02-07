@@ -12,7 +12,8 @@ from requests_oauthlib import OAuth2Session
 from wazo_auth import http
 from wazo_auth.exceptions import UserParamException
 
-from .helpers import MicrosoftPostSchema, get_timestamp_expiration
+from .helpers import get_timestamp_expiration
+from .schemas import MicrosoftSchema
 from .websocket_oauth2 import WebSocketOAuth2
 
 logger = logging.getLogger(__name__)
@@ -26,7 +27,7 @@ class MicrosoftAuth(http.AuthResource):
 
     auth_type = 'microsoft'
 
-    def __init__(self, external_auth_service, config):
+    def __init__(self, external_auth_service, user_service, config):
         self.authorization_base_url = config[self.auth_type]['authorization_base_url']
         self.client_id = config[self.auth_type]['client_id']
         self.client_secret = config[self.auth_type]['client_secret']
@@ -34,6 +35,7 @@ class MicrosoftAuth(http.AuthResource):
         self.redirect_uri = config[self.auth_type]['redirect_uri']
         self.scope = config[self.auth_type]['scope']
         self.token_url = config[self.auth_type]['token_url']
+        self.user_service = user_service
         self.oauth2 = OAuth2Session(self.client_id, scope=self.scope, redirect_uri=self.redirect_uri)
         self.websocket = WebSocketOAuth2(
             host=config[self.auth_type]['websocket_host'],
@@ -46,7 +48,8 @@ class MicrosoftAuth(http.AuthResource):
 
     @http.required_acl('auth.users.{user_uuid}.external.microsoft.create')
     def post(self, user_uuid):
-        args, errors = MicrosoftPostSchema().load(request.get_json())
+        self.user_service.get_user(user_uuid)
+        args, errors = MicrosoftSchema().load(request.get_json())
 
         if errors:
             raise UserParamException.from_errors(errors)
@@ -93,6 +96,7 @@ class MicrosoftAuth(http.AuthResource):
         logger.debug('refresh token info: %s', token_data)
         data['access_token'] = token_data['access_token']
         data['token_expiration'] = get_timestamp_expiration(token_data['expires_in'])
+        data['scope'] = token_data['scope']
 
         self.external_auth_service.update(user_uuid, self.auth_type, data)
 
@@ -100,8 +104,4 @@ class MicrosoftAuth(http.AuthResource):
 
     @staticmethod
     def _create_get_response(data):
-        return {
-            'access_token': data['access_token'],
-            'expiration': data['token_expiration'],
-            'scope': data.get('scope'),
-        }, 200
+        return MicrosoftSchema().dump(data)

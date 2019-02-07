@@ -4,11 +4,14 @@
 import requests
 from hamcrest import (
     assert_that,
+    empty,
     calling,
+    has_entries,
     has_key,
     has_properties,
     has_property,
-    not_
+    none,
+    not_,
 )
 
 from xivo_test_helpers import until
@@ -71,9 +74,11 @@ class TestAuthMicrosoft(BaseTestCase):
 
         response = self.client.external.get(MICROSOFT, self.admin_user_uuid)
 
-        assert_that(response, has_key('access_token'))
-        assert_that(response, has_key('expiration'))
-        assert_that(response, has_key('scope'))
+        assert_that(response, has_entries(
+            access_token=not_(none()),
+            token_expiration=not_(none()),
+            scope=not_(empty()),
+        ))
 
     def test_given_no_external_auth_when_delete_then_not_found(self):
         _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
@@ -99,7 +104,7 @@ class TestAuthMicrosoft(BaseTestCase):
             except requests.HTTPError:
                 return False
 
-        response = until.true(_is_microsoft_token_fetched, timeout=15, interval=1)
+        response = until.true(_is_microsoft_token_fetched, timeout=20, interval=1)
 
 
 def _assert_that_raises_http_error(status_code, fn, *args, **kwargs):
