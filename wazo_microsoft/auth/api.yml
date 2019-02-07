@@ -33,7 +33,6 @@ paths:
         - $ref: '#/parameters/user_uuid'
         - name: body
           in: body
-          required: true
           schema:
             $ref: '#/definitions/MicrosoftPost'
       responses:
@@ -74,7 +73,7 @@ definitions:
         description: Microsoft token
       scope:
         type: string
-        description: Scope permissions
+        description: Scope permissions given to the `access token`
       token_expiration:
         type: integer
         description: Token expiration
@@ -86,15 +85,17 @@ definitions:
     type: object
     properties:
       scope:
-        description: Scope permissions
+        description: Scope permissions requested
         example:
-          [
-              "offline_access",
-              "Contacts.Read"
-          ]
+          - offline_access
+          - Contacts.Read
         type: array
         items:
           type: string
+        default:
+          scope:
+            - offline_access
+            - Contacts.Read
   MicrosoftPostResult:
     type: object
     required:
