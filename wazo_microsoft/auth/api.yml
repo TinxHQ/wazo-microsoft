@@ -23,7 +23,9 @@ paths:
             $ref: '#/definitions/APIError'
     post:
       summary: Ask for a verification URL and store code to get token
-      description: "**Required ACL**: `auth.users.{user_uuid}.external.microsoft.create`"
+      description:
+        "**Required ACL**: `auth.users.{user_uuid}.external.microsoft.create`.\n\n
+        More info on Microsoft permissions: https://docs.microsoft.com/en-us/graph/permissions-reference"
       tags:
         - users
         - microsoft
