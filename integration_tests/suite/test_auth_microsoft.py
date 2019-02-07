@@ -104,7 +104,7 @@ class TestAuthMicrosoft(BaseTestCase):
             except requests.HTTPError:
                 return False
 
-        response = until.true(_is_microsoft_token_fetched, timeout=15, interval=1)
+        response = until.true(_is_microsoft_token_fetched, timeout=20, interval=1)
 
 
 def _assert_that_raises_http_error(status_code, fn, *args, **kwargs):

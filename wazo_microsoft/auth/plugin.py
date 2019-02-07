@@ -13,7 +13,7 @@ class Plugin:
     def load(self, dependencies):
         api = dependencies['api']
         config = dependencies['config']
-        args = (dependencies['external_auth_service'], config)
+        args = (dependencies['external_auth_service'], dependencies['user_service'], config)
 
         if not config['microsoft']['client_id'] or not config['microsoft']['client_secret']:
             logger.warning("Plugin unable to load, microsoft 'client_id' or 'client_secret' missing.")

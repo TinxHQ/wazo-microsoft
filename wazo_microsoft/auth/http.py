@@ -27,7 +27,7 @@ class MicrosoftAuth(http.AuthResource):
 
     auth_type = 'microsoft'
 
-    def __init__(self, external_auth_service, config):
+    def __init__(self, external_auth_service, user_service, config):
         self.authorization_base_url = config[self.auth_type]['authorization_base_url']
         self.client_id = config[self.auth_type]['client_id']
         self.client_secret = config[self.auth_type]['client_secret']
@@ -35,6 +35,7 @@ class MicrosoftAuth(http.AuthResource):
         self.redirect_uri = config[self.auth_type]['redirect_uri']
         self.scope = config[self.auth_type]['scope']
         self.token_url = config[self.auth_type]['token_url']
+        self.user_service = user_service
         self.oauth2 = OAuth2Session(self.client_id, scope=self.scope, redirect_uri=self.redirect_uri)
         self.websocket = WebSocketOAuth2(
             host=config[self.auth_type]['websocket_host'],
@@ -47,6 +48,7 @@ class MicrosoftAuth(http.AuthResource):
 
     @http.required_acl('auth.users.{user_uuid}.external.microsoft.create')
     def post(self, user_uuid):
+        self.user_service.get_user(user_uuid)
         args, errors = MicrosoftSchema().load(request.get_json())
 
         if errors:
