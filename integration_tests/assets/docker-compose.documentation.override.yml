@@ -3,7 +3,9 @@ services:
   sync:
     depends_on:
       - auth
-      - postgres
+      - dird
+      - postgres-auth
+      - postgres-dird
       - swagger-validator
     environment:
-      TARGETS: "auth:9497 postgres:5432 swagger-validator:8080"
+      TARGETS: "auth:9497 dird:9489 postgres-auth:5432 postgres-dird:5432 swagger-validator:8080"

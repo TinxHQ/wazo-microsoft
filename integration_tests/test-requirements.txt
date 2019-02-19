@@ -1,7 +1,12 @@
-https://github.com/wazo-pbx/xivo-test-helpers/archive/master.zip
 https://github.com/wazo-pbx/xivo-auth-client/archive/master.zip
 https://github.com/wazo-pbx/xivo-lib-rest-client/archive/master.zip
+https://github.com/wazo-pbx/xivo-test-helpers/archive/master.zip
+https://github.com/wazo-pbx/wazo-dird-client/archive/master.zip
+https://github.com/wazo-pbx/xivo-lib-python/archive/master.zip
 docker-compose
+mock
 pyhamcrest
 pytest
 requests
+sqlalchemy
+-e ..

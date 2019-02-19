@@ -1,0 +1,5 @@
+enabled_plugins:
+  backends:
+    office365: true
+  views:
+    office365_view: true

@@ -9,12 +9,12 @@ from hamcrest import assert_that, empty
 from .helpers.base import BaseTestCase
 
 
-class TestDocumentation(BaseTestCase):
+class TestDirdDocumentation(BaseTestCase):
 
     asset = 'documentation'
 
     def test_documentation_errors(self):
-        api_url = 'https://auth:9497/0.1/api/api.yml'
+        api_url = 'https://dird:9489/0.1/api/api.yml'
         self._validate_api(api_url)
 
     def _validate_api(self, url):
