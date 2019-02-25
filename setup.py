@@ -22,7 +22,13 @@ setup(
     },
     entry_points={
         'wazo_auth.external_auth': [
-            'microsoft = wazo_microsoft.auth.plugin:Plugin',
+            'microsoft = wazo_microsoft.auth.plugin:MicrosoftPlugin',
+        ],
+        'wazo_dird.backends': [
+            'office365 = wazo_microsoft.dird.plugin:Office365Plugin',
+        ],
+        'wazo_dird.views': [
+            'office365_view = wazo_microsoft.dird.view:Office365View'
         ]
     }
 )

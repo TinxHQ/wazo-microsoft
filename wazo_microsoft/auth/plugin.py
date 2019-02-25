@@ -2,13 +2,13 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import logging
-from .http import MicrosoftAuth
 
+from .http import MicrosoftAuth
 
 logger = logging.getLogger(__name__)
 
 
-class Plugin:
+class MicrosoftPlugin:
 
     def load(self, dependencies):
         api = dependencies['api']
