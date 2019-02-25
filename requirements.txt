@@ -1,2 +1,3 @@
+https://github.com/wazo-pbx/wazo-dird/archive/master.zip
 requests-oauthlib
 websocket-client
