@@ -1,4 +1,38 @@
 paths:
+  /backends/office365/sources/{source_uuid}/contacts:
+    get:
+      description: '**Required ACL:** `dird.backends.office365.sources.{source_uuid}.contacts.read`'
+      operationId: list_contacts from source
+      parameters:
+      - in: path
+        name: source_uuid
+        required: true
+        description: Source uuid
+        type: string
+      summary: Retrieve all contacts from `office365`
+      tags:
+        - office365
+      responses:
+        '200':
+          description: |
+            contacts as fetched from microsoft api
+
+            To know more about microsoft contacts properties, see
+            https://docs.microsoft.com/en-us/graph/api/resources/contact?view=graph-rest-1.0#properties
+          schema: {}
+        '401':
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/Error'
+        '404':
+          description: No such source
+          schema:
+            $ref: '#/definitions/Error'
+        '421':
+          description: Misdirected request
+          schema:
+            $ref: '#/definitions/Error'
+
   /backends/office365/sources:
     get:
       operationId: list_microsoft_source

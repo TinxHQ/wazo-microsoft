@@ -213,6 +213,15 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
 
         assert_that(backends['items'], has_item({'name': self.BACKEND}))
 
+    def test_given_source_and_microsoft_when_list_contacts_then_contacts_listed(self):
+        source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
+        auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
+        auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        contacts = self.client.backends.list_contacts_from_source(backend=self.BACKEND, source_uuid=source['uuid'])
+
+        assert_that(next(iter(contacts)), has_entry('givenName', 'Wario'))
+
 
 @unittest.skip('cannot do the setup with the REST API')
 class TestDirdOffice365Plugin(BaseOffice365TestCase):
