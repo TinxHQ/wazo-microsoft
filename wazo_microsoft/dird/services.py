@@ -42,9 +42,10 @@ class Office365Service:
                 logger.debug('Sucessfully fetched contacts from microsoft.')
                 return response.json().get('value', [])
             else:
-                return []
+                logger.error('An error occured while fetching information from microsoft endpoint')
+                raise UnexpectedEndpointException(endpoint=url, error_code=response.status_code)
         except requests.exceptions.RequestException:
-            raise UnexpectedEndpointException(url)
+            raise UnexpectedEndpointException(endpoint=url)
 
     def headers(self, microsoft_token):
         return {

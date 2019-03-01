@@ -9,6 +9,7 @@ from hamcrest import (
     calling,
     contains,
     empty,
+    equal_to,
     has_entries,
     has_entry,
     has_item,
@@ -274,8 +275,7 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
         self.display = self.client.display.create(**self.display_body)
         self.source = self.client.backends.create_source(
             backend=self.BACKEND,
-            body=self.config(),
-            tenant_uuid=MAIN_TENANT
+            body=self.config()
         )
         profile_body = {
             'name': 'default',
@@ -363,9 +363,9 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
         self.source = self.client.backends.create_source(
             backend=self.BACKEND,
             body=self.config(),
-            tenant_uuid=MAIN_TENANT
         )
         self.auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
+        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
     def tearDown(self):
         try:
@@ -378,8 +378,58 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
             pass
 
     def test_given_microsoft_when_lookup_with_no_endpoint_then_no_error(self):
+        assert_that(self.source['endpoint'], is_(equal_to('https://graph.microsoft.com/v1.0/me/contacts')))
+        assert_that(
+            calling(self.client.directories.lookup).with_args(term='war', profile='default', token='valid-token'),
+            not_(raises(Exception))
+        )
+
+
+class TestDirdOffice365PluginErrorEndpoint(BaseOffice365TestCase):
+
+    asset = 'dird_microsoft'
+
+    BACKEND = 'office365'
+
+    def config(self):
+        return {
+            'auth': {
+                'host': 'auth-mock',
+                'port': 9497,
+                'verify_certificate': False,
+            },
+            'endpoint': 'http://microsoft-mock:80/me/contacts/error',
+            'first_matched_columns': [],
+            'format_columns': {
+                'display_name': "{firstname} {lastname}",
+                'name': "{firstname} {lastname}",
+                'reverse': "{firstname} {lastname}",
+                'phone_mobile': "{mobile}",
+            },
+            'name': 'office365',
+            'searched_columns': [],
+            'type': 'office365',
+        }
+
+    def setUp(self):
+        super().setUp()
+        port = self.service_port(9489, 'dird')
+        self.client = DirdClient(host='localhost', port=port, token=VALID_TOKEN_MAIN_TENANT, verify_certificate=False)
+        self.source = self.client.backends.create_source(
+            backend=self.BACKEND,
+            body=self.config(),
+        )
+        self.auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
         self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
+    def tearDown(self):
+        try:
+            self.client.backends.delete_source(backend=self.BACKEND, source_uuid=self.source['uuid'])
+            self.auth_client_mock.reset_external_auth()
+        except requests.HTTPError:
+            pass
+
+    def test_given_microsoft_when_lookup_with_error_endpoint_then_no_error(self):
         assert_that(
             calling(self.client.directories.lookup).with_args(
                 term='war',
@@ -387,4 +437,15 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
                 token='valid-token',
             ),
             not_(raises(Exception))
+        )
+
+    def test_given_microsoft_when_fetch_all_contacts_with_error_endpoint_then_misdirected_request(self):
+        assert_that(
+            calling(self.client.backends.list_contacts_from_source).with_args(
+                backend=self.BACKEND,
+                source_uuid=self.source['uuid']
+            ),
+            raises(requests.HTTPError).matching(
+                has_property('response', has_properties('status_code', 421))
+            )
         )

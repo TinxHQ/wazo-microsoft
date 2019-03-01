@@ -4,6 +4,16 @@
 from xivo.rest_api_helpers import APIException
 
 
+class UnexpectedEndpointException(APIException):
+
+    code = 421
+
+    def __init__(self, **kwargs):
+        message = 'Unexpected endpoint error.'
+        details = kwargs
+        super().__init__(self.code, message, 'unexpected-endpoint-error', details)
+
+
 class MicrosoftTokenNotFoundException(APIException):
 
     code = 404
