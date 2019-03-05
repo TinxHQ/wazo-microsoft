@@ -30,15 +30,15 @@ class Office365Plugin(BaseSourcePlugin):
             format_columns,
         )
 
-    def search(self, term, profile=None, args=None):
-        logger.debug("Searching term=%s with profile=%s.", term, profile)
+    def search(self, term, args=None):
+        logger.debug("Searching term=%s with args=%s.", term, args)
 
-        if not profile:
-            logger.debug('No profile provided')
+        if not args:
+            logger.debug('No args provided')
             return []
 
-        user_uuid = profile.get('xivo_user_uuid')
-        token = profile.get('token')
+        user_uuid = args.get('xivo_user_uuid')
+        token = args.get('token')
 
         if not token:
             logger.debug('Unable to search through Office365 without a token.')
