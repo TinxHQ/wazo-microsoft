@@ -17,18 +17,6 @@ class Office365Service:
 
     USER_AGENT = 'wazo_ua/1.0'
 
-    def _get(self, headers, url, query_params=None):
-        try:
-            response = requests.get(url, headers=headers, params=query_params)
-            if response.status_code == 200:
-                logger.debug('Sucessfully fetched contacts from microsoft.')
-                return response.json().get('value', [])
-            else:
-                return []
-        except requests.exceptions.RequestException as e:
-            logger.error('Unable to get contacts from this endpoint: %s, error : %s', url, str(e))
-            return []
-
     def get_contacts_with_term(self, microsoft_token, term, url):
         headers = self.headers(microsoft_token)
         query_params = {
