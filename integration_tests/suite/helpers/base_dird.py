@@ -53,7 +53,7 @@ class BaseOffice365TestCase(AssetLaunchingTestCase):
         "token_expiration": 42
     }
 
-    PROFILE = {
+    LOOKUP_ARGS = {
         'xivo_user_uuid': 'a-xivo-uuid',
         'token': 'a-token',
     }

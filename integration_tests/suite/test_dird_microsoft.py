@@ -56,7 +56,7 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
     def test_plugin_lookup(self):
         self.auth_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
-        result = self.backend.search('war', self.PROFILE)
+        result = self.backend.search('war', self.LOOKUP_ARGS)
 
         assert_that(result, contains(has_entries(**self.WARIO)))
 
@@ -88,7 +88,7 @@ class TestOffice365PluginWrongEndpoint(BaseOffice365PluginTestCase):
     def test_plugin_lookup_with_wrong_endpoint(self):
         self.auth_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
-        result = self.backend.search('war', self.PROFILE)
+        result = self.backend.search('war', self.LOOKUP_ARGS)
 
         assert_that(result, is_(empty()))
 
@@ -121,7 +121,13 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
     def setUp(self):
         super().setUp()
         port = self.service_port(9489, 'dird')
-        self.client = DirdClient(host='localhost', port=port, token=VALID_TOKEN_MAIN_TENANT, verify_certificate=False)
+        dird_config = {
+            'host': 'localhost',
+            'port': port,
+            'token': VALID_TOKEN_MAIN_TENANT,
+            'verify_certificate': False,
+        }
+        self.client = DirdClient(**dird_config)
 
     def tearDown(self):
         try:
@@ -134,7 +140,10 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
 
     def test_when_create_source_then_no_error(self):
         assert_that(
-            calling(self.client.backends.create_source).with_args(backend=self.BACKEND, body=self.config()),
+            calling(self.client.backends.create_source).with_args(
+                backend=self.BACKEND,
+                body=self.config(),
+            ),
             not_(raises(requests.HTTPError))
         )
 
@@ -142,16 +151,18 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
 
         assert_that(
-            calling(self.client.backends.delete_source).with_args(backend=self.BACKEND, source_uuid=source['uuid']),
+            calling(self.client.backends.delete_source).with_args(
+                backend=self.BACKEND,
+                source_uuid=source['uuid'],
+            ),
             not_(raises(requests.HTTPError))
         )
 
     def test_when_delete_then_raises(self):
         assert_that(
-            calling(
-                self.client.backends.delete_source).with_args(
-                    backend=self.BACKEND,
-                    source_uuid='a-non-existing-source-uuid'
+            calling(self.client.backends.delete_source).with_args(
+                backend=self.BACKEND,
+                source_uuid='a-non-existing-source-uuid',
             ),
             raises(requests.HTTPError).matching(
                 has_property('response', has_properties('status_code', 404))
@@ -162,7 +173,10 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
 
         assert_that(
-            calling(self.client.backends.get_source).with_args(backend=self.BACKEND, source_uuid=source['uuid']),
+            calling(self.client.backends.get_source).with_args(
+                backend=self.BACKEND,
+                source_uuid=source['uuid'],
+            ),
             not_(raises(requests.HTTPError))
         )
 
@@ -171,7 +185,11 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         source.update({'name': 'a-new-name'})
 
         assert_that(
-            calling(self.client.backends.edit_source(backend=self.BACKEND, source_uuid=source['uuid'], body=source)),
+            calling(self.client.backends.edit_source).with_args(
+                backend=self.BACKEND,
+                source_uuid=source['uuid'],
+                body=source,
+            ),
             not_(raises(requests.HTTPError))
         )
 
@@ -219,7 +237,13 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
     def setUp(self):
         super().setUp()
         port = self.service_port(9489, 'dird')
-        self.client = DirdClient(host='localhost', port=port, token=VALID_TOKEN_MAIN_TENANT, verify_certificate=False)
+        dird_config = {
+            'host': 'localhost',
+            'port': port,
+            'token': VALID_TOKEN_MAIN_TENANT,
+            'verify_certificate': False,
+        }
+        self.client = DirdClient(**dird_config)
         self.source = self.client.backends.create_source(
             backend=self.BACKEND,
             body=self.config(),
@@ -229,7 +253,10 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
 
     def tearDown(self):
         try:
-            self.client.backends.delete_source(backend=self.BACKEND, source_uuid=self.source['uuid'])
+            self.client.backends.delete_source(
+                backend=self.BACKEND,
+                source_uuid=self.source['uuid'],
+            )
             self.auth_client_mock.reset_external_auth()
         except requests.HTTPError:
             pass
@@ -277,7 +304,13 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
     def setUp(self):
         super().setUp()
         port = self.service_port(9489, 'dird')
-        self.client = DirdClient(host='localhost', port=port, token=VALID_TOKEN_MAIN_TENANT, verify_certificate=False)
+        dird_config = {
+            'host': 'localhost',
+            'port': port,
+            'token': VALID_TOKEN_MAIN_TENANT,
+            'verify_certificate': False,
+        }
+        self.client = DirdClient(**dird_config)
         self.source = self.client.backends.create_source(
             backend=self.BACKEND,
             body=self.config(),
@@ -287,7 +320,10 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
 
     def tearDown(self):
         try:
-            self.client.backends.delete_source(backend=self.BACKEND, source_uuid=self.source['uuid'])
+            self.client.backends.delete_source(
+                backend=self.BACKEND,
+                source_uuid=self.source['uuid'],
+            )
             self.auth_client_mock.reset_external_auth()
         except requests.HTTPError:
             pass
@@ -296,6 +332,10 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
         self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
         assert_that(
-            calling(self.client.directories.lookup).with_args(term='war', profile='default', token='valid-token'),
+            calling(self.client.directories.lookup).with_args(
+                term='war',
+                profile='default',
+                token='valid-token',
+            ),
             not_(raises(Exception))
         )
