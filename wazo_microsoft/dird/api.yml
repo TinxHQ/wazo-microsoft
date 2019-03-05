@@ -23,7 +23,7 @@ paths:
           description: The display configuration body
           required: true
           schema:
-            $ref: '#/definitions/MicrosoftSourcePost'
+            $ref: '#/definitions/MicrosoftSource'
       responses:
         '201':
           description: The created display
@@ -107,82 +107,21 @@ paths:
           $ref: '#/responses/NotFoundError'
 definitions:
   MicrosoftSource:
-    title: MicrosoftSource
+    type: object
     allOf:
+      - $ref: '#/definitions/SourceItems'
       - properties:
           auth:
             $ref: '#/definitions/WazoAuthConfig'
-          confd:
-            $ref: '#/definitions/ConfdConfig'
-      - required:
-        - name
-        - auth
-        - confd
-  MicrosoftSourcePost:
-    type: object
-    properties:
-      auth:
-        $ref: '#/definitions/MicrosoftSourcePostAuth'
-      endpoint:
-        description: Endpoint where to get the information from
-        example: "https://graph.microsoft.com/v1.0/me/contacts"
-        default: "https://graph.microsoft.com/v1.0/me/contacts"
-        type: string
-      format_columns:
-        $ref: '#/definitions/MicrosoftSourcePostFormatColumns'
-      name:
-        description: Source name
-        type: string
-        example: office365
-      type:
-        description: Source type
-        example: office365
-        type: string
+          endpoint:
+            description: Endpoint where to get the information from
+            example: "https://graph.microsoft.com/v1.0/me/contacts"
+            default: "https://graph.microsoft.com/v1.0/me/contacts"
+            type: string
     required:
       - auth
-      - format_columns
       - name
-      - type
-  MicrosoftSourcePostAuth:
-    title: auth
-    properties:
-      host:
-        description: Where to find wazo-auth service
-        example: localhost
-        type: string
-      port:
-        description: Port on which wazo-auth is exposed
-        default: 9497
-        type: string
-      verify_certificate:
-        default: true
-        example: false
-        type: string
-    required:
-      - host
-  MicrosoftSourcePostFormatColumns:
-    title: format_columns
-    properties:
-      name:
-        example: "{firstname} {lastname}"
-        type: string
-      display_name:
-        example: "{firstname} {lastname}"
-        type: string
-      phone:
-        example: "{phone}"
-        type: string
-      phone_mobile:
-        example: "{mobile}"
-        type: string
-      reverse:
-        example: "{firstname} {lastname}"
-        type: string
-    required:
-      - name
-      - display_name
-      - phone_mobile
-      - reverse
+      - endpoint
   MicrosoftSourceItems:
     title: MicrosoftSourceItems
     allOf:
@@ -197,20 +136,6 @@ definitions:
         - items
         - total
         - filtered
-  ConfdConfig:
-    title: Confd
-    allOf:
-      - $ref: '#/definitions/ExternalServiceConfig'
-      - properties:
-          port:
-            type: integer
-            default: 9486
-          https:
-            type: boolean
-            default: true
-          version:
-            type: string
-            default: "1.1"
   WazoAuthConfig:
     title: Auth
     allOf:
