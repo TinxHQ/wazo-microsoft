@@ -8,7 +8,7 @@ import requests
 
 from xivo_auth_client import Client as Auth
 
-from .exceptions import MicrosoftTokenNotFoundException, UnexpectedEndpointException
+from .exceptions import MicrosoftTokenNotFoundException
 
 logger = logging.getLogger(__name__)
 
