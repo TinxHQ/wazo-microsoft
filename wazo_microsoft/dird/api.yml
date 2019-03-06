@@ -31,17 +31,15 @@ paths:
             $ref: '#/definitions/MicrosoftSource'
           examples:
             application/json:
-              first_matched_columns: []
-              searched_columns: []
               format_columns:
-                name: "{firstname} {lastname}"
-                display_name: "{firstname} {lastname}"
-                phone_mobile: "{mobile}"
-                reverse: "{firstname} {lastname}"
+                name: "{givenName} {surname}"
+                phone_mobile: "{mobilePhone}"
+                reverse: "{givenName} {surname}"
+                number: "{businessPhones[0]}"
+                email: "{emailAddresses[0][address]}"
               name: office365
               tenant_uuid: 518bdf22-fb53-46c7-9639-0ebd3e95d09c
               uuid: 5a3ba880-4c8c-4bde-8383-4e8dab9a19cf
-              office365: office365
         '400':
           $ref: '#/responses/CreateError'
         '409':

@@ -49,27 +49,10 @@ class Office365Plugin(BaseSourcePlugin):
         except MicrosoftTokenNotFoundException:
             return []
 
-        contacts_output = self.office365.get_contacts_with_term(microsoft_token, term, self.endpoint)
+        contacts = self.office365.get_contacts_with_term(microsoft_token, term, self.endpoint)
+        sorted_contacts = sorted(contacts, key=itemgetter('givenName'))
 
-        contacts = []
-        for person in contacts_output:
-            email = services.get_first_email(person)
-            phone = services.get_first_phone(person)
-            contacts.append({
-                'id': person.get('id', '') or '',
-                'firstname': person.get('givenName', '') or '',
-                'lastname': person.get('surname', '') or '',
-                'job': person.get('pofession', '') or '',
-                'mobile': person.get('mobilePhone', '') or '',
-                'phone': phone,
-                'email': email if '@' in email else '',
-                'entity': '',
-                'fax': '',
-            })
-
-        contacts = sorted(contacts, key=itemgetter('firstname'))
-
-        return [self._source_result_from_content(content) for content in contacts]
+        return [self._source_result_from_content(content) for content in sorted_contacts]
 
     def first_match(self, term, args=None):
         return None
