@@ -31,7 +31,7 @@ class Office365Plugin(BaseSourcePlugin):
         )
 
     def search(self, term, args=None):
-        logger.debug("Searching term=%s with args=%s.", term, args)
+        logger.debug('Searching term=%s', term)
 
         if not args:
             logger.debug('No args provided')
