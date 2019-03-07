@@ -6,6 +6,13 @@ paths:
       description: '**Required ACL:** `dird.backends.microsoft.sources.read`'
       tags:
         - configuration
+      parameters:
+        - $ref: '#/parameters/tenantuuid'
+        - $ref: '#/parameters/recurse'
+        - $ref: '#/parameters/order'
+        - $ref: '#/parameters/direction'
+        - $ref: '#/parameters/Limit'
+        - $ref: '#/parameters/Offset'
       responses:
         '200':
           description: Configured microsoft source
@@ -18,6 +25,7 @@ paths:
       tags:
         - configuration
       parameters:
+        - $ref: '#/parameters/tenantuuid'
         - in: body
           name: body
           description: The display configuration body
@@ -38,8 +46,6 @@ paths:
                 number: "{businessPhones[0]}"
                 email: "{emailAddresses[0][address]}"
               name: office365
-              tenant_uuid: 518bdf22-fb53-46c7-9639-0ebd3e95d09c
-              uuid: 5a3ba880-4c8c-4bde-8383-4e8dab9a19cf
         '400':
           $ref: '#/responses/CreateError'
         '409':
@@ -107,7 +113,7 @@ definitions:
   MicrosoftSource:
     type: object
     allOf:
-      - $ref: '#/definitions/SourceItems'
+      - $ref: '#/definitions/Source'
       - properties:
           auth:
             $ref: '#/definitions/WazoAuthConfig'
