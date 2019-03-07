@@ -24,6 +24,8 @@ class MicrosoftMock(Resource):
                     "displayName": "Wario Bros",
                     "givenName": "Wario",
                     "surname": "Bros",
+                    "mobilePhone": "",
+                    "businessPhones": ['5555555555'],
                     "emailAddresses": [
                         {
                             "address": "wbros@wazoquebec.onmicrosoft.com"

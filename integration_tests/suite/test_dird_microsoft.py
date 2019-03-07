@@ -43,10 +43,8 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
             'endpoint': 'http://localhost:{}/me/contacts'.format(self.service_port(80, 'microsoft-mock')),
             'first_matched_columns': [],
             'format_columns': {
-                'display_name': "{firstname} {lastname}",
-                'name': "{firstname} {lastname}",
-                'reverse': "{firstname} {lastname}",
-                'phone_mobile': "{mobile}",
+                'number': '{businessPhones[0]}',
+                'email': '{emailAddresses[0][address]}',
             },
             'name': 'office365',
             'searched_columns': [],
@@ -58,7 +56,11 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
 
         result = self.backend.search('war', self.LOOKUP_ARGS)
 
-        assert_that(result, contains(has_entries(**self.WARIO)))
+        assert_that(result, contains(has_entries(
+            number='5555555555',
+            email='wbros@wazoquebec.onmicrosoft.com',
+            **self.WARIO
+        )))
 
 
 class TestOffice365PluginWrongEndpoint(BaseOffice365PluginTestCase):
@@ -108,10 +110,10 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
             'endpoint': 'http://microsoft-mock:80/me/contacts',
             'first_matched_columns': [],
             'format_columns': {
-                'display_name': "{firstname} {lastname}",
-                'name': "{firstname} {lastname}",
-                'reverse': "{firstname} {lastname}",
-                'phone_mobile': "{mobile}",
+                'display_name': "{displayName}",
+                'name': "{displayName}",
+                'reverse': "{displayName}",
+                'phone_mobile': "{mobilePhone}",
             },
             'name': 'office365',
             'searched_columns': [],
@@ -233,10 +235,9 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
             'endpoint': 'http://microsoft-mock:80/me/contacts',
             'first_matched_columns': [],
             'format_columns': {
-                'display_name': "{firstname} {lastname}",
-                'name': "{firstname} {lastname}",
-                'reverse': "{firstname} {lastname}",
-                'phone_mobile': "{mobile}",
+                'firstname': "{givenName}",
+                'lastname': "{surname}",
+                'number': "{businessPhones[0]}",
             },
             'name': 'office365',
             'searched_columns': [],
@@ -318,10 +319,10 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
             },
             'first_matched_columns': [],
             'format_columns': {
-                'display_name': "{firstname} {lastname}",
-                'name': "{firstname} {lastname}",
-                'reverse': "{firstname} {lastname}",
-                'phone_mobile': "{mobile}",
+                'firstname': "{givenName}",
+                'lastname': "{surname}",
+                'reverse': "{displayName}",
+                'phone_mobile': "{mobilePhone}",
             },
             'name': 'office365',
             'searched_columns': [],

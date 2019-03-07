@@ -59,9 +59,9 @@ class BaseOffice365TestCase(AssetLaunchingTestCase):
     }
 
     WARIO = {
-        'firstname': 'Wario',
-        'lastname': 'Bros',
-        'mobile': ''
+        'givenName': 'Wario',
+        'surname': 'Bros',
+        'mobilePhone': '',
     }
 
 
