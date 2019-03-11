@@ -47,7 +47,11 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
                 'email': '{emailAddresses[0][address]}',
             },
             'name': 'office365',
-            'searched_columns': [],
+            'searched_columns': [
+                "givenName",
+                "surname",
+                "businessPhones"
+            ],
             'type': 'office365',
         }
 
@@ -240,7 +244,11 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
                 'number': "{businessPhones[0]}",
             },
             'name': 'office365',
-            'searched_columns': [],
+            'searched_columns': [
+                "givenName",
+                "surname",
+                "businessPhones"
+            ],
             'type': 'office365',
         }
 
@@ -325,7 +333,11 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
                 'phone_mobile': "{mobilePhone}",
             },
             'name': 'office365',
-            'searched_columns': [],
+            'searched_columns': [
+                "givenName",
+                "surname",
+                "businessPhones"
+            ],
             'type': 'office365',
         }
 
