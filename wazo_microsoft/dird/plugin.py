@@ -53,7 +53,6 @@ class Office365Plugin(BaseSourcePlugin):
         contacts = self.office365.get_contacts_with_term(microsoft_token, term, self.endpoint)
         for contact in contacts:
             contact['email'] = services.get_first_email(contact)
-            contact['phone_mobile'] = services.get_first_phone(contact)
 
             if not contact.get('givenName'):
                 contact['givenName'] = ''

@@ -41,7 +41,7 @@ paths:
             application/json:
               format_columns:
                 name: "{givenName} {surname}"
-                phone_mobile: "{phone_mobile}"
+                phone_mobile: "{mobilePhone}"
                 number: "{businessPhones[0]}"
                 reverse: "{givenName} {surname}"
                 email: "{email}"

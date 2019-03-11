@@ -59,11 +59,3 @@ def get_microsoft_access_token(user_uuid, wazo_token, **auth_config):
 
 def get_first_email(contact_information):
     return next(iter(contact_information.get('emailAddresses') or []), {}).get('address')
-
-
-def get_first_phone(contact_information):
-    business_phones = contact_information.get('businessPhones') or []
-    home_phones = contact_information.get('homePhones') or []
-    phones = business_phones if business_phones else home_phones
-
-    return phones[0] if phones else None
