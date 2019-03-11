@@ -29,6 +29,7 @@ class Office365Plugin(BaseSourcePlugin):
             unique_column,
             format_columns,
         )
+        self._searched_columns = config.get(self.SEARCHED_COLUMNS, [])
 
     def search(self, term, args=None):
         logger.debug('Searching term=%s', term)
@@ -50,9 +51,25 @@ class Office365Plugin(BaseSourcePlugin):
             return []
 
         contacts = self.office365.get_contacts_with_term(microsoft_token, term, self.endpoint)
+        for contact in contacts:
+            contact['email'] = services.get_first_email(contact)
+            contact['phone_mobile'] = services.get_first_phone(contact)
+
+            if not contact.get('givenName'):
+                contact['givenName'] = ''
+
         sorted_contacts = sorted(contacts, key=itemgetter('givenName'))
 
-        return [self._source_result_from_content(content) for content in sorted_contacts]
+        lowered_term = term.lower()
+
+        def match_fn(entry):
+            for column in self._searched_columns:
+                column_value = entry.get(column) or ''
+                if lowered_term in str(column_value).lower():
+                    return True
+            return False
+
+        return [self._source_result_from_content(content) for content in sorted_contacts if match_fn(content)]
 
     def first_match(self, term, args=None):
         return None
