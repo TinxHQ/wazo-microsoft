@@ -4,7 +4,7 @@ services:
     depends_on:
       - auth
       - oauth2sync
-      - postgres
+      - postgres-auth
       - rabbitmq
     environment:
-      TARGETS: "auth:9497 oauth2sync:80 postgres:5432 rabbitmq:5672"
+      TARGETS: "auth:9497 oauth2sync:80 postgres-auth:5432 rabbitmq:5672"

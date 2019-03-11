@@ -1,0 +1,12 @@
+version: '3.7'
+services:
+  sync:
+    depends_on:
+      - auth-mock
+      - dird
+      - microsoft-mock
+      - postgres-auth
+      - postgres-dird
+      - rabbitmq
+    environment:
+      TARGETS: "auth-mock:9497 dird:9489 microsoft-mock:80 postgres-auth:5432 postgres-dird:5432 rabbitmq:5672"

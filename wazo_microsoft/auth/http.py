@@ -93,7 +93,8 @@ class MicrosoftAuth(http.AuthResource):
         oauth2 = OAuth2Session(self.client_id, token=data)
         token_data = oauth2.refresh_token(self.token_url, client_id=self.client_id, client_secret=self.client_secret)
 
-        logger.debug('refresh token info: %s', token_data)
+        logger.critical('refresh token info: %s', token_data)
+        data['refresh_token'] = token_data['refresh_token']
         data['access_token'] = token_data['access_token']
         data['token_expiration'] = get_timestamp_expiration(token_data['expires_in'])
         data['scope'] = token_data['scope']

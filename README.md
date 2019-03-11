@@ -10,7 +10,7 @@ Theses lines should be added to `wazo-sdk/project.yml` in order to overwrite oth
 wazo-microsoft:
   python3: true
   bind:
-    etc/wazo-auth/conf.d/microsoft.yml: /etc/wazo-auth/conf.d/microsoft.yml 
+    etc/wazo-auth/conf.d/microsoft.yml: /etc/wazo-auth/conf.d/microsoft.yml
 ```
 # Running integration tests
 You need Docker installed.
