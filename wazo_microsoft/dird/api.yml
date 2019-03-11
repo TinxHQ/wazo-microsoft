@@ -41,10 +41,10 @@ paths:
             application/json:
               format_columns:
                 name: "{givenName} {surname}"
-                phone_mobile: "{mobilePhone}"
-                reverse: "{givenName} {surname}"
+                phone_mobile: "{phone_mobile}"
                 number: "{businessPhones[0]}"
-                email: "{emailAddresses[0][address]}"
+                reverse: "{givenName} {surname}"
+                email: "{email}"
               name: office365
         '400':
           $ref: '#/responses/CreateError'
@@ -201,20 +201,6 @@ definitions:
         - items
         - total
         - filtered
-  ConfdConfig:
-    title: Confd
-    allOf:
-      - $ref: '#/definitions/ExternalServiceConfig'
-      - properties:
-          port:
-            type: integer
-            default: 9486
-          https:
-            type: boolean
-            default: true
-          version:
-            type: string
-            default: "1.1"
   WazoAuthConfig:
     title: Auth
     allOf:
