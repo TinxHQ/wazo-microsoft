@@ -30,6 +30,7 @@ class MicrosoftContactList(AuthResource):
         user_uuid = token.user_uuid
         token_from_request = request.headers.get('X-Auth-Token')
         tenant = Tenant.autodetect()
+
         source = self.source_service.get(self.BACKEND, source_uuid, [tenant.uuid])
         microsoft_token = get_microsoft_access_token(user_uuid, token_from_request, **source['auth'])
 
