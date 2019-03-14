@@ -6,7 +6,7 @@ from xivo.rest_api_helpers import APIException
 
 class UnexpectedEndpointException(APIException):
 
-    code = 421
+    code = 503
 
     def __init__(self, **kwargs):
         message = 'Unexpected endpoint error.'

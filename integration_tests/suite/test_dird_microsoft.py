@@ -443,13 +443,13 @@ class TestDirdOffice365PluginErrorEndpoint(BaseOffice365TestCase):
             not_(raises(Exception))
         )
 
-    def test_given_microsoft_when_fetch_all_contacts_with_error_endpoint_then_misdirected_request(self):
+    def test_given_microsoft_when_fetch_all_contacts_with_error_endpoint(self):
         assert_that(
             calling(self.client.backends.list_contacts_from_source).with_args(
                 backend=self.BACKEND,
                 source_uuid=self.source['uuid']
             ),
             raises(requests.HTTPError).matching(
-                has_property('response', has_properties('status_code', 421))
+                has_property('response', has_properties('status_code', 503))
             )
         )
