@@ -322,6 +322,41 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
 
         assert_that(result, is_(empty()))
 
+    def test_given_microsoft_source_when_get_all_contacts_then_contacts_fetched(self):
+        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        result = self.client.backends.list_contacts_from_source(
+            backend=self.BACKEND,
+            source_uuid=self.source['uuid'],
+        )
+
+        assert_that(result.get('items'), has_item('Wario Bros'))
+
+    def test_given_non_existing_microsoft_source_when_get_all_contacts_then_not_found(self):
+        self.auth.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        assert_that(
+            calling(self.client.backends.list_contacts_from_source).with_args(
+                backend=self.BACKEND,
+                source_uuid='a-non-existing-source-uuid',
+            ),
+            raises(requests.HTTPError).matching(
+                has_property('response', has_properties('status_code', 404))
+            )
+        )
+
+    def test_given_microsoft_source_and_non_existing_tenant_when_get_all_contacts_then_not_found(self):
+        self.auth.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        assert_that(
+            calling(self.client.backends.list_contacts_from_source).with_args(
+                backend=self.BACKEND,
+                source_uuid=self.source['uuid'],
+            ),
+            raises(requests.HTTPError).matching(
+                has_property('response', has_properties('status_code', 404))
+            )
+        )
 
 @unittest.skip('cannot do the setup with the REST API')
 class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
