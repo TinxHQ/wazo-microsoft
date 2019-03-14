@@ -35,7 +35,11 @@ class MicrosoftContactList(AuthResource):
 
         contacts = self.office365.get_contacts(microsoft_token, source['endpoint'])
 
-        return contacts, 200
+        return {
+            'filtered': len(contacts),
+            'items': contacts,
+            'total': len(contacts),
+        }, 200
 
 
 class MicrosoftList(SourceList):

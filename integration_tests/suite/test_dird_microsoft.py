@@ -219,9 +219,12 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
         auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
-        contacts = self.client.backends.list_contacts_from_source(backend=self.BACKEND, source_uuid=source['uuid'])
-
-        assert_that(next(iter(contacts)), has_entry('givenName', 'Wario'))
+        result = self.client.backends.list_contacts_from_source(backend=self.BACKEND, source_uuid=source['uuid'])
+        assert_that(result, has_entries(
+            items=has_item(
+                has_entries(givenName='Wario'),
+            ),
+        ))
 
 
 @unittest.skip('cannot do the setup with the REST API')

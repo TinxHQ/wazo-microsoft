@@ -19,7 +19,8 @@ paths:
 
             To know more about microsoft contacts properties, see
             https://docs.microsoft.com/en-us/graph/api/resources/contact?view=graph-rest-1.0#properties
-          schema: {}
+          schema:
+            $ref: '#/definitions/Office365ContactList'
         '401':
           description: Unauthorized
           schema:
@@ -221,6 +222,21 @@ definitions:
       - display_name
       - phone_mobile
       - reverse
+  Office365ContactList:
+    properties:
+      items:
+        type: array
+        items:
+          type: object
+        readOnly: true
+      total:
+        type: integer
+        description: The number of contacts
+        readOnly: true
+      filtered:
+        type: integer
+        description: The number of contacts matching the searched terms
+        readOnly: true
   MicrosoftSourceItems:
     title: MicrosoftSourceItems
     allOf:
