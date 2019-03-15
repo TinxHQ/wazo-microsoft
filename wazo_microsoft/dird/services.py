@@ -8,7 +8,8 @@ import requests
 
 from xivo_auth_client import Client as Auth
 
-from .exceptions import MicrosoftTokenNotFoundException
+from .exceptions import MicrosoftTokenNotFoundException, UnexpectedEndpointException
+
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +33,19 @@ class Office365Service:
         except requests.exceptions.RequestException as e:
             logger.error('Unable to get contacts from this endpoint: %s, error : %s', url, e)
             return []
+
+    def get_contacts(self, microsoft_token, url):
+        headers = self.headers(microsoft_token)
+        try:
+            response = requests.get(url, headers=headers)
+            if response.status_code == 200:
+                logger.debug('Sucessfully fetched contacts from microsoft.')
+                return response.json().get('value', [])
+            else:
+                logger.error('An error occured while fetching information from microsoft endpoint')
+                raise UnexpectedEndpointException(endpoint=url, error_code=response.status_code)
+        except requests.exceptions.RequestException:
+            raise UnexpectedEndpointException(endpoint=url)
 
     def headers(self, microsoft_token):
         return {

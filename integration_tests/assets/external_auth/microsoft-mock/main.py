@@ -39,8 +39,16 @@ class MicrosoftMock(Resource):
         return data, 200
 
 
+class MicrosoftErrorMock(Resource):
+
+    def get(self):
+        logger.debug('Microsoft is sending an error response.')
+        return '', 404
+
+
 if __name__ == '__main__':
     app = Flask('microsoft')
     api = Api(app)
     api.add_resource(MicrosoftMock, '/me/contacts')
+    api.add_resource(MicrosoftErrorMock, '/me/contacts/error')
     app.run(debug=True, host='0.0.0.0', port=80)
