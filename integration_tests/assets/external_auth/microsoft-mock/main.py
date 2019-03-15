@@ -1,6 +1,7 @@
 # Copyright 2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import sys
 import logging
 from flask import Flask, request
 from flask_restful import Resource, Api
@@ -13,10 +14,9 @@ logger.setLevel(logging.DEBUG)
 class MicrosoftMock(Resource):
 
     def get(self):
-        term = request.args.get('term')
-        logger.debug('Looking for term: {}.'.format(term))
+        term = request.args.get('search')
+        print('Looking for term: {}.'.format(term), file=sys.stderr)
         data = {
-            "@odata.context": "a-odata-context",
             "value": [
                 {
                     "@odata.etag": "W/\"an-odata-etag\"",
@@ -36,13 +36,14 @@ class MicrosoftMock(Resource):
                 }
             ]
         }
+        print('Response with term {} is : {}'.format(term, data), file=sys.stderr)
         return data, 200
 
 
 class MicrosoftErrorMock(Resource):
 
     def get(self):
-        logger.debug('Microsoft is sending an error response.')
+        print('Microsoft is sending an error response.', file=sys.stderr)
         return '', 404
 
 
