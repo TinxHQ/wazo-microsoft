@@ -358,6 +358,7 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
             )
         )
 
+
 @unittest.skip('cannot do the setup with the REST API')
 class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
 
