@@ -39,7 +39,7 @@ class Office365Service:
         try:
             response = requests.get(url, headers=headers)
             if response.status_code == 200:
-                logger.debug('Sucessfully fetched contacts from microsoft.')
+                logger.debug('Successfully fetched contacts from microsoft.')
                 return response.json().get('value', [])
             else:
                 logger.error('An error occured while fetching information from microsoft endpoint')
