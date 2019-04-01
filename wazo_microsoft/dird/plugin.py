@@ -25,6 +25,7 @@ class Office365Plugin(BaseSourcePlugin):
         format_columns = dependencies['config'].get(self.FORMAT_COLUMNS, {})
 
         self._SourceResult = make_result_class(
+            'office365',
             self.name,
             unique_column,
             format_columns,
