@@ -28,6 +28,23 @@ class TestAuthMicrosoft(BaseTestCase):
 
     asset = 'auth_microsoft'
 
+    @classmethod
+    def setUpClass(self):
+        super().setUpClass()
+        config = {
+            'client_id': 'a-client-id',
+            'client_secret': 'a-client-secret',
+        }
+        self.client.external.create_config(MICROSOFT, config, self.top_tenant_uuid)
+
+    @classmethod
+    def tearDownClass(self):
+        super().tearDownClass()
+        try:
+            self.client.external.delete_config(MICROSOFT, self.top_tenant_uuid)
+        except requests.HTTPError:
+            pass
+
     def test_when_create_authorize_get_then_does_not_raise(self):
         self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
 
@@ -105,6 +122,14 @@ class TestAuthMicrosoft(BaseTestCase):
                 return False
 
         response = until.true(_is_microsoft_token_fetched, timeout=20, interval=1)
+
+
+class TestAuthMicrosoftWithNoConfig(BaseTestCase):
+
+    asset = 'auth_microsoft'
+
+    def test_given_no_config_when_create_then_not_found(self):
+        _assert_that_raises_http_error(404, self.client.external.create, MICROSOFT, self.admin_user_uuid, {})
 
 
 def _assert_that_raises_http_error(status_code, fn, *args, **kwargs):
