@@ -42,10 +42,3 @@ class BaseTestCase(AssetLaunchingTestCase):
     @classmethod
     def get_top_tenant(cls):
         return cls.client.tenants.list(name='master')['items'][0]
-
-    @classmethod
-    def tearDown(cls):
-        try:
-            cls.client.external.delete('microsoft', cls.admin_user_uuid)
-        except requests.HTTPError:
-            return

@@ -39,9 +39,14 @@ class TestAuthMicrosoft(BaseTestCase):
 
     @classmethod
     def tearDownClass(self):
-        super().tearDownClass()
         try:
             self.client.external.delete_config(MICROSOFT, self.top_tenant_uuid)
+        except requests.HTTPError:
+            pass
+
+    def tearDown(self):
+        try:
+            self.client.external.delete(MICROSOFT, self.admin_user_uuid)
         except requests.HTTPError:
             pass
 
@@ -52,19 +57,6 @@ class TestAuthMicrosoft(BaseTestCase):
 
         assert_that(
             calling(self.client.external.get).with_args(MICROSOFT, self.admin_user_uuid),
-            not_(raises(requests.HTTPError))
-        )
-
-    def test_when_create_then_url_returned(self):
-        response = self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
-
-        assert_that(response, has_key('authorization_url'))
-
-    def test_when_create_twice_without_authorize_then_not_created(self):
-        self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
-
-        assert_that(
-            calling(self.client.external.create).with_args(MICROSOFT, self.admin_user_uuid, {}),
             not_(raises(requests.HTTPError))
         )
 
@@ -79,12 +71,6 @@ class TestAuthMicrosoft(BaseTestCase):
             not_(raises(requests.HTTPError))
         )
 
-    def test_when_delete_then_not_found(self):
-        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
-
-    def test_when_delete_nothing_then_not_found(self):
-        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
-
     def test_when_get_then_token_returned(self):
         self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
         self._simulate_user_authentication()
@@ -97,18 +83,37 @@ class TestAuthMicrosoft(BaseTestCase):
             scope=not_(empty()),
         ))
 
-    def test_given_no_external_auth_when_delete_then_not_found(self):
-        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
-
-    def test_given_no_external_auth_when_get_then_not_found(self):
-        _assert_that_raises_http_error(404, self.client.external.get, MICROSOFT, self.admin_user_uuid)
-
     def test_given_no_external_auth_confirmed_when_get_then_not_found(self):
         self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
 
         _assert_that_raises_http_error(404, self.client.external.get, MICROSOFT, self.admin_user_uuid)
         self._simulate_user_authentication()
         self.client.external.get(MICROSOFT, self.admin_user_uuid)
+
+    def test_given_no_external_auth_when_delete_then_not_found(self):
+        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
+
+    def test_given_no_external_auth_when_get_then_not_found(self):
+        _assert_that_raises_http_error(404, self.client.external.get, MICROSOFT, self.admin_user_uuid)
+
+    def test_when_create_then_url_returned(self):
+        response = self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
+
+        assert_that(response, has_key('authorization_url'))
+
+    def test_when_create_twice_without_authorize_then_not_created(self):
+        self.client.external.create(MICROSOFT, self.admin_user_uuid, {})
+
+        assert_that(
+            calling(self.client.external.create).with_args(MICROSOFT, self.admin_user_uuid, {}),
+            not_(raises(requests.HTTPError))
+        )
+
+    def test_when_delete_then_not_found(self):
+        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
+
+    def test_when_delete_nothing_then_not_found(self):
+        _assert_that_raises_http_error(404, self.client.external.delete, MICROSOFT, self.admin_user_uuid)
 
     def _simulate_user_authentication(self):
         authorize_url = AUTHORIZE_URL.format(self.service_port(80, 'oauth2sync'))
@@ -121,7 +126,7 @@ class TestAuthMicrosoft(BaseTestCase):
             except requests.HTTPError:
                 return False
 
-        response = until.true(_is_microsoft_token_fetched, timeout=20, interval=1)
+        response = until.true(_is_microsoft_token_fetched, timeout=15, interval=1)
 
 
 class TestAuthMicrosoftWithNoConfig(BaseTestCase):
