@@ -73,6 +73,11 @@ class Office365Plugin(BaseSourcePlugin):
 
         return [self._source_result_from_content(content) for content in sorted_contacts if match_fn(content)]
 
+        def list(self, unique_ids, args=None):
+            entries = self.office365.get_contacts()
+
+            return [self._source_result_from_content(contact) for contact in entries]
+
     def first_match(self, term, args=None):
         return None
 
