@@ -2,9 +2,7 @@ enabled_external_auth_plugins:
   microsoft: true
 
 microsoft:
-  authorization_base_url: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize' 
-  client_id: 'a_client_id'
-  client_secret: 'a_client_secret'
+  authorization_base_url: 'https://login.microsoftonline.com/common/oauth2/v2.0/authorize'
   redirect_uri: 'http://oauth2sync:80/microsoft/authorize'
   scope: [
         'offline_access',

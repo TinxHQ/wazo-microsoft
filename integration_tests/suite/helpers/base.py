@@ -37,9 +37,8 @@ class BaseTestCase(AssetLaunchingTestCase):
         cls.admin_user_uuid = token_data['metadata']['uuid']
         cls.client.set_token(token_data['token'])
 
+        cls.top_tenant_uuid = cls.get_top_tenant()['uuid']
+
     @classmethod
-    def tearDown(cls):
-        try:
-            cls.client.external.delete('microsoft', cls.admin_user_uuid)
-        except requests.HTTPError:
-            return
+    def get_top_tenant(cls):
+        return cls.client.tenants.list(name='master')['items'][0]
