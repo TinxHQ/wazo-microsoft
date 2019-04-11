@@ -1,6 +1,7 @@
 # Copyright 2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0-or-later
 
+import time
 import requests
 from hamcrest import (
     assert_that,
@@ -43,6 +44,7 @@ class TestAuthMicrosoft(BaseTestCase):
             self.client.external.delete_config(MICROSOFT, self.top_tenant_uuid)
         except requests.HTTPError:
             pass
+        super().tearDownClass()
 
     def tearDown(self):
         try:
@@ -126,7 +128,11 @@ class TestAuthMicrosoft(BaseTestCase):
             except requests.HTTPError:
                 return False
 
+        # if the external auth-data already existed from a previous test we might get a false
+        # positive in _is_microsoft_token_fetched
+        time.sleep(1.0)
         response = until.true(_is_microsoft_token_fetched, timeout=15, interval=1)
+        assert_that(response, not_(False), 'failed to simulate user authentication')
 
 
 class TestAuthMicrosoftWithNoConfig(BaseTestCase):
