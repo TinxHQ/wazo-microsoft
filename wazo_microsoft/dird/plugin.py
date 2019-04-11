@@ -31,6 +31,8 @@ class Office365Plugin(BaseSourcePlugin):
             format_columns,
         )
         self._searched_columns = config.get(self.SEARCHED_COLUMNS, [])
+        if not self._searched_columns:
+            logger.info('no "searched_columns" configured on "%s" no results will be matched', self.name)
 
     def search(self, term, args=None):
         logger.debug('Searching term=%s', term)
