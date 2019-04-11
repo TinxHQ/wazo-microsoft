@@ -1,10 +1,14 @@
-# Copyright 2015-2019 The Wazo Authors  (see the AUTHORS file)
+# Copyright 2019 The Wazo Authors  (see the AUTHORS file)
 # SPDX-License-Identifier: GPL-3.0+
+
 import os
 import logging
+import requests
 
 from stevedore import DriverManager
 from mock import Mock
+
+from wazo_dird_client import Client as DirdClient
 from xivo_test_helpers.asset_launching_test_case import AssetLaunchingTestCase
 from xivo_test_helpers.auth import AuthClient as AuthMock
 
@@ -12,6 +16,7 @@ from xivo_test_helpers.auth import AuthClient as AuthMock
 logger = logging.getLogger(__name__)
 
 ASSET_ROOT = os.path.join(os.path.dirname(__file__), '../..', 'assets')
+VALID_TOKEN_MAIN_TENANT = 'valid-token-master-tenant'
 
 
 class BackendWrapper:
@@ -64,13 +69,54 @@ class BaseOffice365TestCase(AssetLaunchingTestCase):
         'mobilePhone': '',
     }
 
+    def setUp(self):
+        super().setUp()
+        port = self.service_port(9489, 'dird')
+        dird_config = {
+            'host': 'localhost',
+            'port': port,
+            'token': VALID_TOKEN_MAIN_TENANT,
+            'verify_certificate': False,
+        }
+        self.client = DirdClient(**dird_config)
+        self.source = self.client.backends.create_source(
+            backend=self.BACKEND,
+            body=self.config(),
+        )
+        self.display = self.client.displays.create({
+            'name': 'display',
+            'columns': [
+                {'field': 'firstname'},
+            ],
+        })
+        self.profile = self.client.profiles.create({
+            'name': 'default',
+            'display': self.display,
+            'services': {'lookup': {'sources': [self.source]}},
+        })
+        self.auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
+        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+    def tearDown(self):
+        try:
+            self.client.profiles.delete(self.profile['uuid'])
+            self.client.displays.delete(self.display['uuid'])
+            self.client.backends.delete_source(
+                backend=self.BACKEND,
+                source_uuid=self.source['uuid'],
+            )
+        except requests.HTTPError:
+            pass
+
+        self.auth_client_mock.reset_external_auth()
+        super().tearDown()
+
 
 class BaseOffice365PluginTestCase(BaseOffice365TestCase):
 
     asset = 'plugin_dird_microsoft'
 
     def setUp(self):
-        super().setUp()
         self.auth_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
         self.backend = BackendWrapper(
             'office365',

@@ -2,7 +2,6 @@
 # SPDX-License-Identifier: GPL-3.0-or-later
 
 import requests
-import unittest
 
 from hamcrest import (
     assert_that,
@@ -18,16 +17,18 @@ from hamcrest import (
     is_,
     not_,
 )
-from wazo_dird_client import Client as DirdClient
 from xivo_test_helpers.auth import AuthClient as AuthMock
 from xivo_test_helpers.hamcrest.raises import raises
 
-from .helpers.base_dird import (BaseOffice365PluginTestCase,
-                                BaseOffice365TestCase)
+from .helpers.base_dird import (
+    BaseOffice365PluginTestCase,
+    BaseOffice365TestCase,
+)
 
 requests.packages.urllib3.disable_warnings()
 VALID_TOKEN_MAIN_TENANT = 'valid-token-master-tenant'
 MAIN_TENANT = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee10'
+SUB_TENANT = 'eeeeeeee-eeee-eeee-eeee-eeeeeeeeee11'
 
 
 class TestOffice365Plugin(BaseOffice365PluginTestCase):
@@ -127,14 +128,7 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
 
     def setUp(self):
         super().setUp()
-        port = self.service_port(9489, 'dird')
-        dird_config = {
-            'host': 'localhost',
-            'port': port,
-            'token': VALID_TOKEN_MAIN_TENANT,
-            'verify_certificate': False,
-        }
-        self.client = DirdClient(**dird_config)
+        self.client.backends.delete_source(backend=self.BACKEND, source_uuid=self.source['uuid'])
 
     def tearDown(self):
         try:
@@ -144,6 +138,8 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
                 self.client.backends.delete_source(backend=self.BACKEND, source_uuid=source['uuid'])
         except requests.HTTPError:
             pass
+
+        super().tearDown()
 
     def test_when_create_source_then_no_error(self):
         assert_that(
@@ -227,7 +223,6 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         ))
 
 
-@unittest.skip('cannot do the setup with the REST API')
 class TestDirdOffice365Plugin(BaseOffice365TestCase):
 
     asset = 'dird_microsoft'
@@ -267,57 +262,22 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
 
     def setUp(self):
         super().setUp()
-        port = self.service_port(9489, 'dird')
-        dird_config = {
-            'host': 'localhost',
-            'port': port,
-            'token': VALID_TOKEN_MAIN_TENANT,
-            'verify_certificate': False,
-        }
-        self.client = DirdClient(**dird_config)
-        self.display = self.client.display.create(**self.display_body)
-        self.source = self.client.backends.create_source(
-            backend=self.BACKEND,
-            body=self.config()
-        )
-        profile_body = {
-            'name': 'default',
-            'display': self.display,
-            'services': {'lookup': {'sources': [self.source]}},
-        }
-        self.profile = self.client.profile.create(**profile_body)
         self.auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
-
-    def tearDown(self):
-        try:
-            self.client.backends.delete_source(
-                backend=self.BACKEND,
-                source_uuid=self.source['uuid'],
-            )
-            self.auth_client_mock.reset_external_auth()
-        except requests.HTTPError:
-            pass
-
-        try:
-            self.client.display.delete(self.display['uuid'])
-        except requests.HTTPError:
-            pass
-
-        try:
-            self.client.profile.delete(self.profile['uuid'])
-        except requests.HTTPError:
-            pass
 
     def test_given_microsoft_when_lookup_then_contacts_fetched(self):
         self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
-        result = self.client.directories.lookup(term='war', profile='default', token='valid-token')
-        result = result['results'][0]['column_values']
-
-        assert_that(result, has_item('Wario Bros'))
+        result = self.client.directories.lookup(term='war', profile='default')
+        assert_that(result, has_entries(
+            results=contains(
+                has_entries(column_values=contains('Wario')),
+            )
+        ))
 
     def test_given_no_microsoft_when_lookup_then_no_result(self):
-        result = self.client.directories.lookup(term='war', profile='default', token='valid-token')
+        self.auth_client_mock.reset_external_auth()
+
+        result = self.client.directories.lookup(term='war', profile='default')
         result = result['results']
 
         assert_that(result, is_(empty()))
@@ -330,10 +290,19 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
             source_uuid=self.source['uuid'],
         )
 
-        assert_that(result.get('items'), has_item('Wario Bros'))
+        assert_that(result, has_entries(
+            total=1,
+            filtered=1,
+            items=contains(has_entries(
+                displayName='Wario Bros',
+                surname='Bros',
+                businessPhones=['5555555555'],
+                givenName='Wario',
+            )),
+        ))
 
     def test_given_non_existing_microsoft_source_when_get_all_contacts_then_not_found(self):
-        self.auth.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
         assert_that(
             calling(self.client.backends.list_contacts_from_source).with_args(
@@ -346,12 +315,13 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
         )
 
     def test_given_microsoft_source_and_non_existing_tenant_when_get_all_contacts_then_not_found(self):
-        self.auth.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
 
         assert_that(
             calling(self.client.backends.list_contacts_from_source).with_args(
                 backend=self.BACKEND,
                 source_uuid=self.source['uuid'],
+                tenant_uuid=SUB_TENANT,
             ),
             raises(requests.HTTPError).matching(
                 has_property('response', has_properties('status_code', 404))
@@ -359,7 +329,6 @@ class TestDirdOffice365Plugin(BaseOffice365TestCase):
         )
 
 
-@unittest.skip('cannot do the setup with the REST API')
 class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
 
     asset = 'dird_microsoft'
@@ -389,37 +358,10 @@ class TestDirdOffice365PluginNoEndpoint(BaseOffice365TestCase):
             'type': 'office365',
         }
 
-    def setUp(self):
-        super().setUp()
-        port = self.service_port(9489, 'dird')
-        dird_config = {
-            'host': 'localhost',
-            'port': port,
-            'token': VALID_TOKEN_MAIN_TENANT,
-            'verify_certificate': False,
-        }
-        self.client = DirdClient(**dird_config)
-        self.source = self.client.backends.create_source(
-            backend=self.BACKEND,
-            body=self.config(),
-        )
-        self.auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
-        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
-
-    def tearDown(self):
-        try:
-            self.client.backends.delete_source(
-                backend=self.BACKEND,
-                source_uuid=self.source['uuid'],
-            )
-            self.auth_client_mock.reset_external_auth()
-        except requests.HTTPError:
-            pass
-
     def test_given_microsoft_when_lookup_with_no_endpoint_then_no_error(self):
         assert_that(self.source['endpoint'], is_(equal_to('https://graph.microsoft.com/v1.0/me/contacts')))
         assert_that(
-            calling(self.client.directories.lookup).with_args(term='war', profile='default', token='valid-token'),
+            calling(self.client.directories.lookup).with_args(term='war', profile='default'),
             not_(raises(Exception))
         )
 
@@ -450,31 +392,11 @@ class TestDirdOffice365PluginErrorEndpoint(BaseOffice365TestCase):
             'type': 'office365',
         }
 
-    def setUp(self):
-        super().setUp()
-        port = self.service_port(9489, 'dird')
-        self.client = DirdClient(host='localhost', port=port, token=VALID_TOKEN_MAIN_TENANT, verify_certificate=False)
-        self.source = self.client.backends.create_source(
-            backend=self.BACKEND,
-            body=self.config(),
-        )
-        self.auth_client_mock = AuthMock(host='0.0.0.0', port=self.service_port(9497, 'auth-mock'))
-        self.auth_client_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
-
-    def tearDown(self):
-        try:
-            self.client.backends.delete_source(backend=self.BACKEND, source_uuid=self.source['uuid'])
-            self.auth_client_mock.reset_external_auth()
-        except requests.HTTPError:
-            pass
-
-    @unittest.skip('cannot do the setup with the REST API')
     def test_given_microsoft_when_lookup_with_error_endpoint_then_no_error(self):
         assert_that(
             calling(self.client.directories.lookup).with_args(
                 term='war',
                 profile='default',
-                token='valid-token',
             ),
             not_(raises(Exception))
         )
