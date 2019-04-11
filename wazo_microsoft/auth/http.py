@@ -92,7 +92,7 @@ class MicrosoftAuth(http.AuthResource):
 
     def _refresh_token(self, user_uuid, data):
         client_id, client_secret = self._get_external_config()
-        oauth2 = OAuth2Session(self.client_id, token=data)
+        oauth2 = OAuth2Session(client_id, token=data)
         token_data = oauth2.refresh_token(self.token_url, client_id=client_id, client_secret=client_secret)
 
         logger.critical('refresh token info: %s', token_data)
