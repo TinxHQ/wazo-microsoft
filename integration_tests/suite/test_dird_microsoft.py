@@ -43,7 +43,7 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
                 'verify_certificate': False,
             },
             'endpoint': 'http://localhost:{}/me/contacts'.format(self.service_port(80, 'microsoft-mock')),
-            'first_matched_columns': [],
+            'first_matched_columns': ['businessPhones', 'mobilePhone'],
             'format_columns': {
                 'number': '{businessPhones[0]}',
                 'email': '{emailAddresses[0][address]}',
@@ -78,6 +78,17 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
             email='wbros@wazoquebec.onmicrosoft.com',
             **self.WARIO
         )))
+
+    def test_plugin_reverse(self):
+        self.auth_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        result = self.backend.first('5555555555', self.LOOKUP_ARGS)
+
+        assert_that(result, has_entries(
+            number='5555555555',
+            email='wbros@wazoquebec.onmicrosoft.com',
+            **self.WARIO
+        ))
 
 
 class TestOffice365PluginWrongEndpoint(BaseOffice365PluginTestCase):
