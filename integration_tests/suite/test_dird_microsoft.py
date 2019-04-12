@@ -68,6 +68,17 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
             **self.WARIO
         )))
 
+    def test_plugin_favorites(self):
+        self.auth_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        result = self.backend.list(['an-id'], self.FAVORITE_ARGS)
+
+        assert_that(result, contains(has_entries(
+            number='5555555555',
+            email='wbros@wazoquebec.onmicrosoft.com',
+            **self.WARIO
+        )))
+
 
 class TestOffice365PluginWrongEndpoint(BaseOffice365PluginTestCase):
 

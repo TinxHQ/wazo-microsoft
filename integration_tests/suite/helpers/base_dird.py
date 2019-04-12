@@ -42,8 +42,8 @@ class BackendWrapper:
     def first(self, term):
         return self._source.first_match(term).fields
 
-    def list(self, source_ids):
-        results = self._source.list(source_ids)
+    def list(self, source_ids, *args, **kwargs):
+        results = self._source.list(source_ids, *args, **kwargs)
         return [r.fields for r in results]
 
 
@@ -59,6 +59,10 @@ class BaseOffice365TestCase(AssetLaunchingTestCase):
     }
 
     LOOKUP_ARGS = {
+        'xivo_user_uuid': 'a-xivo-uuid',
+        'token': 'a-token',
+    }
+    FAVORITE_ARGS = {
         'xivo_user_uuid': 'a-xivo-uuid',
         'token': 'a-token',
     }
