@@ -21,13 +21,13 @@ class Office365Plugin(BaseSourcePlugin):
         self.endpoint = config['endpoint']
         self.office365 = services.Office365Service()
 
-        unique_column = 'id'
+        self.unique_column = 'id'
         format_columns = dependencies['config'].get(self.FORMAT_COLUMNS, {})
 
         self._SourceResult = make_result_class(
             'office365',
             self.name,
-            unique_column,
+            self.unique_column,
             format_columns,
         )
         self._searched_columns = config.get(self.SEARCHED_COLUMNS, [])
@@ -36,50 +36,56 @@ class Office365Plugin(BaseSourcePlugin):
 
     def search(self, term, args=None):
         logger.debug('Searching term=%s', term)
-
-        if not args:
-            logger.debug('No args provided')
-            return []
-
-        user_uuid = args.get('xivo_user_uuid')
-        token = args.get('token')
-
-        if not token:
-            logger.debug('Unable to search through Office365 without a token.')
-            return []
-
         try:
-            microsoft_token = services.get_microsoft_access_token(user_uuid, token, **self.auth)
+            microsoft_token = self._get_microsoft_token(**args)
         except MicrosoftTokenNotFoundException:
             return []
 
         contacts = self.office365.get_contacts_with_term(microsoft_token, term, self.endpoint)
+        updated_contacts = self._update_contact_fields(contacts)
+
+        lowered_term = term.lower()
+
+        def match_fn(contact):
+            for column in self._searched_columns:
+                column_value = contact.get(column) or ''
+                if lowered_term in str(column_value).lower():
+                    return True
+            return False
+
+        filtered_contacts = [c for c in updated_contacts if match_fn(c)]
+        sorted_contacts = sorted(filtered_contacts, key=itemgetter('givenName'))
+
+        return [self._SourceResult(c) for c in sorted_contacts]
+
+    def list(self, unique_ids, args=None):
+        try:
+            microsoft_token = self._get_microsoft_token(**args)
+        except MicrosoftTokenNotFoundException:
+            return []
+
+        contacts = self.office365.get_contacts(microsoft_token, self.endpoint)
+        updated_contacts = self._update_contact_fields(contacts)
+        filtered_contacts = [c for c in updated_contacts if c[self.unique_column] in unique_ids]
+
+        return [self._SourceResult(contact) for contact in filtered_contacts]
+
+    def first_match(self, term, args=None):
+        return None
+
+    def _get_microsoft_token(self, xivo_user_uuid, token=None, **ignored):
+        if not token:
+            logger.debug('Unable to search through Office365 without a token.')
+            raise MicrosoftTokenNotFoundException()
+
+        return services.get_microsoft_access_token(xivo_user_uuid, token, **self.auth)
+
+    @staticmethod
+    def _update_contact_fields(contacts):
         for contact in contacts:
             contact['email'] = services.get_first_email(contact)
 
             if not contact.get('givenName'):
                 contact['givenName'] = ''
 
-        sorted_contacts = sorted(contacts, key=itemgetter('givenName'))
-
-        lowered_term = term.lower()
-
-        def match_fn(entry):
-            for column in self._searched_columns:
-                column_value = entry.get(column) or ''
-                if lowered_term in str(column_value).lower():
-                    return True
-            return False
-
-        return [self._source_result_from_content(content) for content in sorted_contacts if match_fn(content)]
-
-        def list(self, unique_ids, args=None):
-            entries = self.office365.get_contacts()
-
-            return [self._source_result_from_content(contact) for contact in entries]
-
-    def first_match(self, term, args=None):
-        return None
-
-    def _source_result_from_content(self, content):
-        return self._SourceResult(content)
+        return contacts
