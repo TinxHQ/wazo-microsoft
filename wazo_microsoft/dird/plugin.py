@@ -105,21 +105,22 @@ class Office365Plugin(BaseSourcePlugin):
         updated_contacts = self._update_contact_fields(contacts)
         lowered_term = term.lower()
 
-        def match_fn(contact):
-            for column in self._first_matched_columns:
-                column_value = contact.get(column) or ''
-                if not isinstance(column_value, list):
-                    if lowered_term == str(column_value).lower():
-                        return True
-                else:
-                    for item in column_value:
-                        if lowered_term == item.lower():
-                            return True
-            return False
-
         for contact in updated_contacts:
-            if match_fn(contact):
+            if self._first_match_predicate(lowered_term, contact):
                 return self._SourceResult(contact)
+
+    def _first_match_predicate(self, term, contact):
+        for column in self._first_matched_columns:
+            column_value = contact.get(column) or ''
+
+            if not isinstance(column_value, list):
+                if term == str(column_value).lower():
+                    return True
+            else:
+                for item in column_value:
+                    if term == item.lower():
+                        return True
+        return False
 
     def _get_microsoft_token(self, xivo_user_uuid, token=None, **ignored):
         if not token:
