@@ -83,9 +83,6 @@ class Office365Plugin(BaseSourcePlugin):
     @staticmethod
     def _update_contact_fields(contacts):
         for contact in contacts:
+            contact.setdefault('givenName', '')
             contact['email'] = services.get_first_email(contact)
-
-            if not contact.get('givenName'):
-                contact['givenName'] = ''
-
         return contacts
