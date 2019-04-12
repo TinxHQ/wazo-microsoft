@@ -67,3 +67,4 @@ class TestOffice365Plugin(TestCase):
         assert_that(self.source._first_match_predicate(term, mario), equal_to(False))
         assert_that(self.source._first_match_predicate(term, luigi), equal_to(True))
         assert_that(self.source._first_match_predicate(term, peach), equal_to(True))
+        assert_that(self.source._first_match_predicate(term[:-1], peach), equal_to(False))
