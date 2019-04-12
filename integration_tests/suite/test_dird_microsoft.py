@@ -125,7 +125,7 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
                 'verify_certificate': False,
             },
             'endpoint': 'http://microsoft-mock:80/me/contacts',
-            'first_matched_columns': [],
+            'first_matched_columns': ['mobilePhone'],
             'format_columns': {
                 'display_name': "{displayName}",
                 'name': "{displayName}",
@@ -184,15 +184,17 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         )
 
     def test_given_source_when_get_then_ok(self):
-        source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
+        config = self.config()
 
-        assert_that(
-            calling(self.client.backends.get_source).with_args(
-                backend=self.BACKEND,
-                source_uuid=source['uuid'],
-            ),
-            not_(raises(requests.HTTPError))
-        )
+        created = self.client.backends.create_source(backend=self.BACKEND, body=config)
+
+        source = self.client.backends.get_source(backend=self.BACKEND, source_uuid=created['uuid'])
+        assert_that(source, has_entries(
+            uuid=created['uuid'],
+            auth=config['auth'],
+            format_columns=config['format_columns'],
+            first_matched_columns=config['first_matched_columns'],
+        ))
 
     def test_given_source_when_edit_then_ok(self):
         source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
