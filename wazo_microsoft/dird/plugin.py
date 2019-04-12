@@ -23,6 +23,12 @@ class Office365Plugin(BaseSourcePlugin):
 
         self.unique_column = 'id'
         format_columns = dependencies['config'].get(self.FORMAT_COLUMNS, {})
+        if 'reverse' not in format_columns:
+            logger.info(
+                'no "reverse" column has been configured on %s will use "givenName"',
+                self.name
+            )
+            format_columns['reverse'] = '{givenName}'
 
         self._SourceResult = make_result_class(
             'office365',
@@ -30,9 +36,20 @@ class Office365Plugin(BaseSourcePlugin):
             self.unique_column,
             format_columns,
         )
+
         self._searched_columns = config.get(self.SEARCHED_COLUMNS, [])
         if not self._searched_columns:
-            logger.info('no "searched_columns" configured on "%s" no results will be matched', self.name)
+            logger.info(
+                'no "searched_columns" configured on "%s" no results will be matched',
+                self.name,
+            )
+
+        self._first_matched_columns = config.get(self.FIRST_MATCHED_COLUMNS, [])
+        if not self._first_matched_columns:
+            logger.info(
+                'no "first_matched_columns" configured on "%s" no results will be matched',
+                self.name,
+            )
 
     def search(self, term, args=None):
         logger.debug('Searching term=%s', term)
@@ -71,7 +88,38 @@ class Office365Plugin(BaseSourcePlugin):
         return [self._SourceResult(contact) for contact in filtered_contacts]
 
     def first_match(self, term, args=None):
-        return None
+        if not self._first_matched_columns:
+            logger.debug(
+                '%s is a source for reverse lookups but the not have a "first_matched_columns"',
+                self.name,
+            )
+            return
+
+        try:
+            microsoft_token = self._get_microsoft_token(**args)
+        except MicrosoftTokenNotFoundException:
+            logger.debug('could not find a matching microsoft token, aborting first_match')
+            return None
+
+        contacts = self.office365.get_contacts(microsoft_token, self.endpoint)
+        updated_contacts = self._update_contact_fields(contacts)
+        lowered_term = term.lower()
+
+        def match_fn(contact):
+            for column in self._first_matched_columns:
+                column_value = contact.get(column) or ''
+                if not isinstance(column_value, list):
+                    if lowered_term == str(column_value).lower():
+                        return True
+                else:
+                    for item in column_value:
+                        if lowered_term == item.lower():
+                            return True
+            return False
+
+        for contact in updated_contacts:
+            if match_fn(contact):
+                return self._SourceResult(contact)
 
     def _get_microsoft_token(self, xivo_user_uuid, token=None, **ignored):
         if not token:
