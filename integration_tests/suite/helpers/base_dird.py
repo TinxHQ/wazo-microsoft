@@ -39,8 +39,8 @@ class BackendWrapper:
     def search_raw(self, term, profile):
         return self._source.search(term, profile)
 
-    def first(self, term):
-        return self._source.first_match(term).fields
+    def first(self, term, *args, **kwargs):
+        return self._source.first_match(term, *args, **kwargs).fields
 
     def list(self, source_ids, *args, **kwargs):
         results = self._source.list(source_ids, *args, **kwargs)

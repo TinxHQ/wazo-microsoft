@@ -43,7 +43,7 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
                 'verify_certificate': False,
             },
             'endpoint': 'http://localhost:{}/me/contacts'.format(self.service_port(80, 'microsoft-mock')),
-            'first_matched_columns': [],
+            'first_matched_columns': ['businessPhones', 'mobilePhone'],
             'format_columns': {
                 'number': '{businessPhones[0]}',
                 'email': '{emailAddresses[0][address]}',
@@ -78,6 +78,17 @@ class TestOffice365Plugin(BaseOffice365PluginTestCase):
             email='wbros@wazoquebec.onmicrosoft.com',
             **self.WARIO
         )))
+
+    def test_plugin_reverse(self):
+        self.auth_mock.set_external_auth(self.MICROSOFT_EXTERNAL_AUTH)
+
+        result = self.backend.first('5555555555', self.LOOKUP_ARGS)
+
+        assert_that(result, has_entries(
+            number='5555555555',
+            email='wbros@wazoquebec.onmicrosoft.com',
+            **self.WARIO
+        ))
 
 
 class TestOffice365PluginWrongEndpoint(BaseOffice365PluginTestCase):
@@ -125,7 +136,7 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
                 'verify_certificate': False,
             },
             'endpoint': 'http://microsoft-mock:80/me/contacts',
-            'first_matched_columns': [],
+            'first_matched_columns': ['mobilePhone'],
             'format_columns': {
                 'display_name': "{displayName}",
                 'name': "{displayName}",
@@ -184,15 +195,17 @@ class TestDirdClientOffice365Plugin(BaseOffice365TestCase):
         )
 
     def test_given_source_when_get_then_ok(self):
-        source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
+        config = self.config()
 
-        assert_that(
-            calling(self.client.backends.get_source).with_args(
-                backend=self.BACKEND,
-                source_uuid=source['uuid'],
-            ),
-            not_(raises(requests.HTTPError))
-        )
+        created = self.client.backends.create_source(backend=self.BACKEND, body=config)
+
+        source = self.client.backends.get_source(backend=self.BACKEND, source_uuid=created['uuid'])
+        assert_that(source, has_entries(
+            uuid=created['uuid'],
+            auth=config['auth'],
+            format_columns=config['format_columns'],
+            first_matched_columns=config['first_matched_columns'],
+        ))
 
     def test_given_source_when_edit_then_ok(self):
         source = self.client.backends.create_source(backend=self.BACKEND, body=self.config())
