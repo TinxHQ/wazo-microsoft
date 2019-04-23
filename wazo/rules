@@ -13,12 +13,15 @@ case "$1" in
     ;;
 
     install)
-        systemctl restart wazo-auth
+        systemctl restart wazo-auth || true
+        systemctl restart wazo-dird || true
     ;;
 
     uninstall)
-        rm -r /etc/wazo-auth/conf.d/microsoft.yml
+        rm -f /etc/wazo-auth/conf.d/microsoft.yml
+        rm -f /etc/wazo-dird/conf.d/office365.yml
         systemctl restart wazo-auth || true
+        systemctl restart wazo-dird || true
     ;;
 
     postrm)
