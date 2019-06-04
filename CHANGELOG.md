@@ -1,6 +1,13 @@
 Changelog
 =========
 
+2.0.2-1
+-------
+
+* Use the wazo-auth-client
+* Fix the openapi spec for the /contacts
+
+
 2.0.1-2
 -------
 

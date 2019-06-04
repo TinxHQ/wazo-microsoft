@@ -14,7 +14,8 @@ author: Wazo Team
 name: wazo-microsoft
 namespace: official
 plugin_format_version: 1
-version: 2.0.1-2
+version: 2.0.2-1
 tags:
   - authentication
   - contacts
+min_wazo_version: 19.08
