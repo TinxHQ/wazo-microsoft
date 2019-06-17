@@ -7,7 +7,7 @@ from setuptools import setup
 
 setup(
     name='wazo_microsoft',
-    version='2.0.1',
+    version='2.0.2',
     description='Wazo Microsoft authentication connector',
 
     author='Wazo Authors',
