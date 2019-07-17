@@ -1,5 +1,9 @@
 # wazo-microsoft plugin
 
+## Deprecated
+
+This plugins has been merged into wazo-auth and wazo-dird avoid using this plugin on a version above wazo 19.10
+
 ### auth plugin
 This plugin adds routes to manage microsoft authentication.
 
